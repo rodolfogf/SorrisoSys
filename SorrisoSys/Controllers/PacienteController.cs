@@ -11,7 +11,7 @@ namespace SorrisoSys.Controllers
     //[Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class PacienteController : ControllerBase
+    public class PacienteController : Controller
     {
         private readonly SorrisoSysContext _context;
         private readonly IPacienteRepository _pacienteRepository;
@@ -25,24 +25,25 @@ namespace SorrisoSys.Controllers
         [HttpPost]
         public async Task<IActionResult> CadastrarPaciente([FromBody] Paciente paciente)
         {
-            if (await _pacienteRepository.ValidarCpfExistenteAsync(paciente.Cpf))
-            {
-                return Conflict("Já existe um paciente cadastrado com este CPF.");
-            }
+            Paciente result;
+
             try
             {
-                await _context.Pacientes.AddAsync(paciente);
-                await _context.SaveChangesAsync();
+                result = await _pacienteRepository.AddPacienteAsync(paciente);
             }
-            catch(DbException)
+            catch (HttpRequestException ex)
             {
-                throw;
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
-            return CreatedAtAction(
-                    nameof(RetornarPacientePorId)
-                    ,new { id = paciente.Id }
-                    ,paciente);
+            if (result == null)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
         [HttpGet]
@@ -58,7 +59,7 @@ namespace SorrisoSys.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> RetornarPacientePorId(int id) 
+        public async Task<IActionResult> RetornarPacientePorId(int id)
         {
             var paciente = await _context.Pacientes.FindAsync(id);
 
@@ -79,7 +80,7 @@ namespace SorrisoSys.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch(DbException) 
+            catch (DbException)
             {
                 throw;
             }
@@ -87,35 +88,28 @@ namespace SorrisoSys.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> AtualizarPaciente(int id, [FromBody] Paciente pacienteAtualizar) 
+        public async Task<IActionResult> UpdatePaciente(int id, [FromBody] Paciente pacienteAtualizar)
         {
-            if(id != pacienteAtualizar.Id)
-            {
-                return BadRequest("Id do paciente incompatível");
-            }
-
-            var paciente = await _context.Pacientes.FindAsync(id);
-            if (paciente == null) return NotFound();
-
-            _context.Entry(paciente).CurrentValues.SetValues(pacienteAtualizar);
+            Paciente result;
 
             try
             {
-                await _context.SaveChangesAsync();
+                result = await _pacienteRepository.UpdatePacienteAsync(id, pacienteAtualizar);
             }
-            catch (DbUpdateConcurrencyException) 
+            catch (KeyNotFoundException ex)
             {
-                if (await _pacienteRepository.ValidarPacienteExistenteAsync(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return Problem(ex.Message);
             }
 
-            return NoContent();
+            return Ok(result);
         }
     }
 }
