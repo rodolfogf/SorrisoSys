@@ -1,0 +1,6 @@
+@SorrisoSys_HostAddress = http://localhost:5148
+
+GET {{SorrisoSys_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
