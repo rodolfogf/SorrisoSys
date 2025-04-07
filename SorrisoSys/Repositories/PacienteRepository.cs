@@ -2,6 +2,7 @@
 using SorrisoSys.Data;
 using SorrisoSys.Models;
 using SorrisoSys.Repositories.Interfaces;
+using FluentValidation.Results;
 
 namespace SorrisoSys.Repositories
 {
@@ -22,6 +23,21 @@ namespace SorrisoSys.Repositories
             _context = context;
         }
 
+        public ValidationResult ValidarDadosPaciente(Paciente paciente)
+        {
+            PacienteValidator validator = new();
+            ValidationResult result = validator.Validate(paciente);
+
+            if (!result.IsValid)
+            {
+                string erros = string.Join(Environment.NewLine, result.Errors.Select(e => e.ErrorMessage));
+
+                throw new NotImplementedException(erros);
+            }
+
+            return result;
+        }
+
         public async Task<bool> ValidarPacienteExistenteAsync(int id) // private
         {
             return await _context.Pacientes.AnyAsync(x => x.Id == id);
@@ -34,22 +50,48 @@ namespace SorrisoSys.Repositories
             var paciente = await _context.Pacientes.FirstOrDefaultAsync(x => x.Cpf == cpf);
             return paciente != null;
         }
-
-        public async Task<Paciente> GetPacienteById(int id)
+        public async Task<IEnumerable<Paciente>> GetAllPacienteAsync(int skip, int take)
         {
-            return await _context.Pacientes.FirstOrDefaultAsync(x => x.Id == id);
-        }
+            if (skip < 0 || take <= 0)
+            {
+                throw new ArgumentException("Parâmetros de paginação inválidos");
+            }
 
+            try
+            {
+                return await _context.Pacientes
+                    .Skip(skip)
+                    .Take(take)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new HttpRequestException("Falha ao recuperar pacientes", ex);
+            }
+        }
+        public async Task<Paciente?> GetPacienteByIdAsync(int id)
+        {
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID do paciente inválido");
+            }
+
+            var paciente = await _context.Pacientes.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (paciente == null)
+            {
+                throw new KeyNotFoundException("Paciente não encontrado");
+            }
+
+            return paciente;
+        }
         public async Task<Paciente> AddPacienteAsync(Paciente paciente)
         {
+            ValidarDadosPaciente(paciente);            
+            
             if (await ValidarCpfExistenteAsync(paciente.Cpf))
             {
-                /*return new Result
-                {
-                    HttpStatusCode = 404,
-                    Message = "Já existe um paciente cadastrado com este CPF."
-                };*/
-
                 throw new Exception("Já existe um paciente cadastrado com este CPF.");
             }
 
@@ -68,13 +110,8 @@ namespace SorrisoSys.Repositories
                 throw new Exception("E necessário informar o ID e os dados do paciente a ser alterado!");
             }
 
-            var pacienteOld = await GetPacienteById(id);
+            var pacienteOld = await GetPacienteByIdAsync(id);
 
-            if(pacienteOld == null)
-            {
-                throw new KeyNotFoundException("Paciente não encontrado");
-            }
-            
             if (await ValidarCpfExistenteAsync(paciente.Cpf))
             {
                 throw new Exception("Já existe um paciente cadastrado com este CPF.");
@@ -87,5 +124,19 @@ namespace SorrisoSys.Repositories
 
             return result.Entity;
         }
+
+        public async Task DeletePaciente(int id)
+        {
+            var paciente = await GetPacienteByIdAsync(id);
+
+            if (paciente != null)
+            {
+                _context.Remove(paciente);
+                if (await _context.SaveChangesAsync() <= 0)
+                {
+                    throw new HttpRequestException("Falha ao excluir o paciente");
+                }
+            }
+        }        
     }
 }

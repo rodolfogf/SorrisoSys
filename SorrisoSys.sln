@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SorrisoSys", "SorrisoSys\SorrisoSys.csproj", "{6E62938E-B1C2-4232-BA59-ACA90C860C17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SorrisoSys", "SorrisoSys\SorrisoSys.csproj", "{6E62938E-B1C2-4232-BA59-ACA90C860C17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SorrisoSys.Tests", "SorrisoSys.Tests\SorrisoSys.Tests.csproj", "{3D59D063-2438-4F19-AB55-C14A60A41C40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6E62938E-B1C2-4232-BA59-ACA90C860C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E62938E-B1C2-4232-BA59-ACA90C860C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E62938E-B1C2-4232-BA59-ACA90C860C17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D59D063-2438-4F19-AB55-C14A60A41C40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D59D063-2438-4F19-AB55-C14A60A41C40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D59D063-2438-4F19-AB55-C14A60A41C40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D59D063-2438-4F19-AB55-C14A60A41C40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,10 +1,8 @@
 ﻿//using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SorrisoSys.Data;
 using SorrisoSys.Models;
 using SorrisoSys.Repositories.Interfaces;
-using System.Data.Common;
 
 namespace SorrisoSys.Controllers
 {
@@ -20,6 +18,50 @@ namespace SorrisoSys.Controllers
         {
             _context = context;
             _pacienteRepository = pacienteRepository;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Paciente>>> RetornarPacientes([FromQuery] int skip = 0, [FromQuery] int take = 10)
+        {
+            try
+            {
+                var result = await _pacienteRepository.GetAllPacienteAsync(skip, take);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno ao listar pacientes: {ex.Message}");
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> RetornarPacientePorId(int id)
+        {
+            try
+            {
+                var result = await _pacienteRepository.GetPacienteByIdAsync(id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno ao buscar paciente: {ex.Message}");
+            }
         }
 
         [HttpPost]
@@ -46,49 +88,10 @@ namespace SorrisoSys.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Paciente>>> RetornarPacientes([FromQuery] int skip = 0, [FromQuery] int take = 10)
-        {
-            var pacientes = await _context.Pacientes
-                .Skip(skip)
-                .Take(take)
-                .AsNoTracking() //melhora de performance para operações somente leitura
-                .ToListAsync();
 
-            return pacientes;
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> RetornarPacientePorId(int id)
-        {
-            var paciente = await _context.Pacientes.FindAsync(id);
-
-            if (paciente == null) return NotFound();
-
-            return Ok(paciente);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletarPaciente(int id)
-        {
-            var paciente = await _context.Pacientes.FindAsync(id);
-            if (paciente == null) return NotFound();
-
-            _context.Remove(paciente);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbException)
-            {
-                throw;
-            }
-            return NoContent();
-        }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePaciente(int id, [FromBody] Paciente pacienteAtualizar)
+        public async Task<IActionResult> AtualizaPaciente(int id, [FromBody] Paciente pacienteAtualizar)
         {
             Paciente result;
 
@@ -110,6 +113,29 @@ namespace SorrisoSys.Controllers
             }
 
             return Ok(result);
+        }
+        
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletarPaciente(int id)
+        {
+            try
+            {
+                await _pacienteRepository.DeletePaciente(id);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(HttpRequestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+
+            return NoContent();
         }
     }
 }
