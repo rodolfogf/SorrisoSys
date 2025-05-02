@@ -19,7 +19,7 @@ namespace SorrisoSys.Tests
         [InlineData("123")] // CPF muito curto
         [InlineData("")] // CPF vazio
         [InlineData(null)] // CPF nulo
-        public void Deve_Retornar_Erro_Quando_CPF_Invalido(string cpfInvalido)
+        public void DeveRetornarErro_QuandoCPFInvalido(string cpfInvalido)
         {
             // Arrange
             var paciente = new Paciente { Cpf = cpfInvalido };
@@ -38,7 +38,7 @@ namespace SorrisoSys.Tests
         [InlineData("ABCDEFGH")] // CEP com letras
         [InlineData("")] // CEP vazio
         [InlineData(null)] // CEP nulo
-        public void Deve_Retornar_Erro_Quando_CEP_Invalido(string cepInvalido)
+        public void DeveRetornarErro_QuandoCEPInvalido(string cepInvalido)
         {
             // Arrange
             var paciente = new Paciente { Cep = cepInvalido };
@@ -55,7 +55,7 @@ namespace SorrisoSys.Tests
         [InlineData("")] // Nome vazio
         [InlineData(null)] // Nome nulo
         [InlineData("   ")] // Nome com espaços em branco
-        public void Nao_Deve_Retornar_Erro_Quando_Nome_Vazio(string nomeVazio)
+        public void NaoDeveRetornarErro_QuandoNomeVazio(string nomeVazio)
         {
             // Arrange
             var paciente = new Paciente { Nome = nomeVazio };
@@ -68,7 +68,7 @@ namespace SorrisoSys.Tests
         }
 
         [Fact]
-        public void Deve_Passar_Quando_CPF_Valido()
+        public void DevePassar_QuandoCPFValido()
         {
             // Arrange
             var paciente = new Paciente { Cpf = "52998224725" }; // CPF válido
@@ -81,7 +81,7 @@ namespace SorrisoSys.Tests
         }
 
         [Fact]
-        public void Deve_Passar_Quando_CEP_Valido()
+        public void DevePassarQuando_CEPValido()
         {
             // Arrange
             var paciente = new Paciente { Cep = "01001000" }; // CEP válido
